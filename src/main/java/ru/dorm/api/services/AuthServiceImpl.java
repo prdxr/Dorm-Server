@@ -1,6 +1,7 @@
 package ru.dorm.api.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.dorm.api.dao.UserDAO;
 import ru.dorm.api.dto.login.LoginRequest;
@@ -17,6 +18,7 @@ public class AuthServiceImpl implements AuthService{
     private final UserRepository userRepository;
     private final TokenService tokenService;
     private final UserDAO userDAO;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public RegisterResponse registration(RegisterRequest registerRequest) {
@@ -33,7 +35,7 @@ public class AuthServiceImpl implements AuthService{
 
         User newUser = User.builder()
                 .login(login)
-                .password(password)
+                .password(passwordEncoder.encode(password))
                 .dorm_id(dorm_id)
                 .role_id(role_id)
                 .build();
@@ -43,7 +45,18 @@ public class AuthServiceImpl implements AuthService{
         return new RegisterResponse(tokenService.generateToken(login), 200);
     }
     @Override
-    public LoginResponse login(LoginRequest loginResponse) {
-        return new LoginResponse("token", 200);
+    public LoginResponse login(LoginRequest loginRequest) {
+        String login = loginRequest.getLogin();
+        String password = loginRequest.getPassword();
+
+        if (userDAO.findByLogin(login) == null) {
+            return new LoginResponse(null, 409); //нет логина в бд
+        }
+        User user = userDAO.findByLogin(login);
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            return new LoginResponse(null, 406); //логин или пароль неверны
+        }
+        String token = tokenService.generateToken(login);
+        return new LoginResponse(token, 200);
     }
 }
