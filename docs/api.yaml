@@ -1,0 +1,137 @@
+openapi: 3.0.1
+info:
+  title: Dormitory App API 
+  version: 0.0.1
+servers:
+  - url: http://localhost:8080
+    description: Dev server
+tags:
+  - name: auth
+  
+paths:
+  /auth/register:
+    post:
+      tags:
+        - auth
+      summary: User registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: Successful register
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse200'
+          
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: User login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse200'
+        '400':
+          description: Login already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '500':
+          description: Login already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+
+components:
+  schemas:
+
+    # Auth
+
+    RegisterRequest:
+      required:
+        - login
+        - password
+        - role_id
+        - dorm_id
+        - room
+      properties:
+        login:
+          type: string
+          example: 'username'
+        password:
+          type: string
+          example: 'password'
+        role_id:
+          type: integer
+          default: 1
+        dorm_id:
+          type: integer
+          default: 1
+        room:
+          type: string
+          example: '100'
+
+    LoginRequest:
+      required:
+        - login
+        - password
+      properties:
+        login:
+          type: string
+          example: 'username'
+        password:
+          type: string
+          example: 'password'
+    AuthResponse200:
+      required:
+        - token
+      properties:
+        token:
+          type: string
+          example: '67s6df8ds7fsd'
+
+    # General responses
+    
+    ErrorResponse400:
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: 'invalid data'
+    ErrorResponse500:
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: 'internal error'
